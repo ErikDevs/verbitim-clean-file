@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/x-icon" href="check-svgrepo-com.svg" />
+
+    <title>Text Cleaner</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: auto;
+        display: flex;
+        width: 100vw;
+        gap: 2px;
+      }
+
+      .pasting-area {
+        display: flex;
+        height: 90vh;
+        width: 50vw;
+        flex-direction: column;
+        margin-top: 20px;
+        padding: 10px;
+        font-size: 14px;
+      }
+
+      .cleaned-text {
+        height: 90vh;
+        display: flex;
+        width: 50%;
+        flex-direction: column;
+        margin-top: 20px;
+        padding: 10px;
+        font-size: 14px;
+      }
+
+      textarea {
+        height: 100%;
+      }
+      button {
+        margin-top: 20px;
+        padding: 10px 20px;
+        font-size: 16px;
+        cursor: pointer;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="pasting-area">
+      <h2>Paste Your Text Below</h2>
+      <textarea
+        class=""
+        id="originalText"
+        placeholder="Paste your text here..."
+      ></textarea>
+      <button onclick="cleanText()">Clean Text</button>
+    </div>
+
+    <div class="cleaned-text">
+      <h2>Cleaned Text</h2>
+      <textarea id="cleanedText" readonly></textarea>
+      <button onclick="copyText()">Copy to Clipboard</button>
+    </div>
+
+    <script>
+      function cleanText() {
+        const originalText = document.getElementById("originalText").value;
+
+        // Remove "Speaker X HH:MM:SS" lines
+        let cleanedText = originalText.replace(
+          /Speaker [0-9]+\s+\d{2}:\d{2}:\d{2}/g,
+          ""
+        );
+
+        // Remove double commas
+        cleanedText = cleanedText.replace(/,\s*,+/g, "");
+        // Remove double periods, even if separated by spaces
+        cleanedText = cleanedText.replace(/(\.\s*){2,}/g, ".");
+
+        // Remove any instance of "<...>"
+        cleanedText = cleanedText.replace(/<[^>]*>/g, "");
+
+        // Remove commas before or after a period or question mark
+        cleanedText = cleanedText.replace(/\s*,\s*([.?])/g, "$1");
+        cleanedText = cleanedText.replace(/([.?])\s*,\s*/g, "$1");
+
+        // Ensure a space after each period or question mark and capitalize the first letter after them
+        cleanedText = cleanedText.replace(/([.?])([a-zA-Z])/g, "$1 $2");
+        cleanedText = cleanedText.replace(
+          /(?:^|[.!?]\s+)([a-z])/g,
+          (match, p1) => {
+            return match.replace(p1, p1.toUpperCase());
+          }
+        );
+
+        // Ensure no extra spaces remain
+        cleanedText = cleanedText.replace(/^\s+|\s+$/g, "");
+
+        document.getElementById("cleanedText").value = cleanedText;
+
+        document.getElementById("cleanedText").value = cleanedText;
+      }
+
+      function copyText() {
+        const cleanedText = document.getElementById("cleanedText");
+        cleanedText.select();
+        document.execCommand("copy");
+      }
+    </script>
+  </body>
+</html>
