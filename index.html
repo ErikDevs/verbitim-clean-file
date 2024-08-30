@@ -73,6 +73,45 @@
     </div>
 
     <script>
+      function removeConsecutiveDuplicatesInClauses(text) {
+        // Split the text into sentences using regex to match punctuation marks (., !, ?)
+        let sentences = text.split(/(?<=[.!?])\s+/);
+        let resultSentences = [];
+
+        sentences.forEach((sentence) => {
+          // Split the sentence into clauses based on commas or semicolons
+          let clauses = sentence.split(/[,;]\s*/);
+          let cleanedClauses = [];
+
+          clauses.forEach((clause) => {
+            // Split the clause into words
+            let words = clause.split(/\s+/);
+            let cleanedWords = [];
+
+            // Remove consecutive duplicate words without case sensitivity
+            words.forEach((word, i) => {
+              if (
+                i === 0 ||
+                word.toLowerCase() !== words[i - 1].toLowerCase()
+              ) {
+                cleanedWords.push(word);
+              }
+            });
+
+            // Reconstruct the clause from cleaned words
+            let cleanedClause = cleanedWords.join(" ");
+            cleanedClauses.push(cleanedClause);
+          });
+
+          // Reconstruct the sentence from cleaned clauses
+          let cleanedSentence = cleanedClauses.join(", ");
+          resultSentences.push(cleanedSentence);
+        });
+
+        // Join the cleaned sentences back into a single text string
+        return resultSentences.join(" ");
+      }
+
       function cleanText() {
         const fillerWords = [];
 
@@ -99,15 +138,16 @@
               .trim();
           });
 
-          // Remove double commas
-          cleanedSection = cleanedSection.replace(/,\s*,+/g, "");
-          // Remove double periods, even if separated by spaces
-          cleanedSection = cleanedSection.replace(/(\.\s*){2,}/g, ".");
+          // Remove consecutive commas, periods, question marks, exclamation points, or a mix of these
+          cleanedSection = cleanedSection.replace(/([.,!?])\1+/g, "$1");
+
           // Remove any instance of "<...>"
           cleanedSection = cleanedSection.replace(/<[^>]*>/g, "");
+
           // Remove commas before or after a period or question mark
           cleanedSection = cleanedSection.replace(/\s*,\s*([.?])/g, "$1");
           cleanedSection = cleanedSection.replace(/([.?])\s*,\s*/g, "$1");
+
           // Remove commas with no text before them
           cleanedSection = cleanedSection.replace(/\s*,/g, "");
 
@@ -129,7 +169,7 @@
           );
 
           // Remove duplicate words, clauses, and sentences
-          return cleanedSection;
+          return removeConsecutiveDuplicatesInClauses(cleanedSection);
         });
 
         // Combine cleaned sections with a line break between them
