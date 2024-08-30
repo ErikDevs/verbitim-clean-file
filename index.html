@@ -25,7 +25,6 @@
       }
 
       .cleaned-text {
-        height: 90vh;
         display: flex;
         width: 50%;
         flex-direction: column;
@@ -44,6 +43,10 @@
         padding: 10px 20px;
         font-size: 16px;
         cursor: pointer;
+      }
+
+      h2 {
+        color: red;
       }
 
       .text-content {
@@ -70,31 +73,6 @@
     </div>
 
     <script>
-      function removeDuplicates(text) {
-        // Split the text into sentences using regex to match punctuation marks (., !, ?)
-        let sentences = text.split(/(?<=[.!?])\s+/);
-
-        // Use a Set to track unique sentences
-        let uniqueSentences = new Set();
-        let resultSentences = [];
-
-        sentences.forEach((sentence) => {
-          // Remove duplicate words within the sentence
-          let words = sentence.split(/\s+/);
-          let uniqueWords = new Set(words);
-          let cleanedSentence = Array.from(uniqueWords).join(" ");
-
-          // Check if the cleaned sentence is unique
-          if (!uniqueSentences.has(cleanedSentence)) {
-            uniqueSentences.add(cleanedSentence);
-            resultSentences.push(cleanedSentence);
-          }
-        });
-
-        // Join the unique sentences back into a single text string
-        return resultSentences.join(" ");
-      }
-
       function cleanText() {
         const fillerWords = [];
 
@@ -151,7 +129,7 @@
           );
 
           // Remove duplicate words, clauses, and sentences
-          return removeDuplicates(cleanedSection);
+          return cleanedSection;
         });
 
         // Combine cleaned sections with a line break between them
