@@ -3,19 +3,24 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="icon" type="image/x-icon" href="check-svgrepo-com.svg" />
+    <link
+      rel="icon"
+      type="image/x-icon"
+      href="images/check-badge-svgrepo-com.svg"
+    />
     <title>Text Cleaner</title>
     <style>
       body {
+        max-width: 1440px;
         font-family: Arial, sans-serif;
-        margin: 0;
-        padding: 20px;
+        margin: auto;
+        padding: 10px 10% 10px 10%;
         display: flex;
         justify-content: center;
         align-items: center;
         height: 100vh;
         width: 100vw;
-        box-sizing: border-box; /* Include padding in element's width and height */
+        box-sizing: border-box;
       }
 
       .text-area {
@@ -31,179 +36,186 @@
         margin: 0 0 10px 0;
         font-size: 18px;
         text-align: center;
-        color: #f41e1e;
       }
 
       textarea {
         width: 100%;
-        height: calc(
-          100% - 60px
-        ); /* Adjust to account for headings and button */
+        height: calc(100% - 60px);
         font-size: 16px;
-        padding: 10px;
+        padding: 4px 20px 2px 20px;
         border: 1px solid #ddd;
-        border-radius: 4px;
         box-sizing: border-box;
         resize: none;
         outline: none;
-        overflow-y: auto; /* Allow scrolling if text overflows */
+        overflow-y: auto;
       }
 
       button {
         width: 100%;
         height: 40px;
-        font-size: 20px;
+        font-size: 16px;
         cursor: pointer;
-        border-radius: 4px;
         border: none;
         margin-top: 10px;
+        margin-bottom: 20px;
         background-color: #3fa2f6;
         color: white;
         transition: background-color 0.5s ease;
+        display: flex;
+        justify-content: center;
+        border-radius: 5px;
+        align-items: center;
+        position: relative;
       }
 
-      button:hover {
-        background-color: #96c9f4;
+      /* Loader styles */
+      .loader {
+        width: 60px;
+        aspect-ratio: 4;
+        background: radial-gradient(circle closest-side, #fff 90%, #0000) 0 /
+          calc(100% / 3) 100% space;
+        clip-path: inset(0 100% 0 0);
+        animation: l1 1s steps(4) infinite;
+      }
+
+      @keyframes l1 {
+        to {
+          clip-path: inset(0 -34% 0 0);
+        }
+      }
+      .hidden {
+        display: none;
       }
     </style>
   </head>
   <body>
     <div class="text-area">
-      <h2>Paste Your Text Below (Verbertim)</h2>
+      <button class="action-btn" id="actionButton" onclick="handleAction()">
+        Clean Text
+        <div class="loader hidden" id="loader"></div>
+      </button>
       <textarea
         id="textArea"
         placeholder="Paste your text here..."
         autofocus
       ></textarea>
-      <button class="action-btn" id="actionButton" onclick="handleAction()">
-        Clean Text
-      </button>
     </div>
 
     <script>
       function cleanText() {
-        // List of filler words to be removed from the text.
-        const fillerWords = [];
+        return new Promise((resolve) => {
+          setTimeout(() => {
+            const fillerWords = [];
 
-        // Get the original text from the textarea with ID "textArea".
-        let originalText = document.getElementById("textArea").value;
+            // Get the original text from the textarea with ID "textArea".
+            let originalText = document.getElementById("textArea").value;
 
-        // Split the text into sections based on the speaker and timestamp format.
-        let speakerSections = originalText.split(
-          /(?=Speaker [0-9]+\s+\d{2}:\d{2}:\d{2})/
-        );
+            // Split the text into sections based on the speaker and timestamp format.
+            let speakerSections = originalText.split(
+              /(?=Speaker [0-9]+\s+\d{2}:\d{2}:\d{2})/
+            );
 
-        // Process each section individually.
-        let cleanedSections = speakerSections.map((section) => {
-          // Replace the speaker and timestamp with a line break.
-          let cleanedSection = section.replace(
-            /Speaker [0-9]+\s+\d{2}:\d{2}:\d{2}/g,
-            "\n"
-          );
+            // Process each section individually.
+            let cleanedSections = speakerSections.map((section) => {
+              // Replace the speaker and timestamp with a line break.
+              let cleanedSection = section.replace(
+                /Speaker [0-9]+\s+\d{2}:\d{2}:\d{2}/g,
+                "\n"
+              );
 
-          // Remove filler words and clean up extra spaces.
-          fillerWords.forEach((filler) => {
-            const fillerPattern = new RegExp(filler, "gi");
-            cleanedSection = cleanedSection
-              .replace(fillerPattern, "") // Remove filler words.
-              .replace(/\s{2,}/g, " ") // Replace multiple spaces with a single space.
-              .trim(); // Trim leading and trailing spaces.
-          });
+              // Remove filler words and clean up extra spaces.
+              fillerWords.forEach((filler) => {
+                const fillerPattern = new RegExp(filler, "gi");
+                cleanedSection = cleanedSection
+                  .replace(fillerPattern, "") // Remove filler words.
+                  .replace(/\s{2,}/g, " ") // Replace multiple spaces with a single space.
+                  .trim(); // Trim leading and trailing spaces.
+              });
 
-          // Replace repeated punctuation marks (e.g., "!!!" becomes "!").
-          cleanedSection = cleanedSection.replace(/([.!?])\1+/g, "$1");
+              cleanedSection = cleanedSection.replace(/([.!?])\1+/g, "");
 
-          // Remove any HTML tags that might be present.
-          cleanedSection = cleanedSection.replace(/<[^>]*>/g, "");
+              // Remove any HTML tags that might be present.
+              cleanedSection = cleanedSection.replace(/<[^>]*>/g, "");
 
-          // Remove double commas and misplaced commas.
-          cleanedSection = cleanedSection
-            .replace(/,{2,}/g, ",") // Replace multiple consecutive commas with a single comma.
-            .replace(/(\s*,\s*)+/g, ", ") // Normalize spaces around commas.
-            .replace(/(^|\n)\s*,/g, "$1") // Remove commas at the start of lines.
-            .replace(/,\s*([.!?])/g, "$1") // Remove commas before periods, exclamation marks, or question marks.
-            .replace(/,\s*$/, "") // Remove commas at the end of the text.
-            .replace(/\s*,\s*\n/g, "\n"); // Remove commas just before line breaks.
+              // Remove double commas and misplaced commas.
+              cleanedSection = cleanedSection
+                .replace(/,{2,}/g, "") // Replace multiple consecutive commas with a single comma.
+                .replace(/(\s*,\s*)+/g, ", ") // Normalize spaces around commas.
+                .replace(/(^|\n)\s*,/g, "$1") // Remove commas at the start of lines.
+                .replace(/,\s*([.!?])/g, "$1") // Remove commas before periods, exclamation marks, or question marks.
+                .replace(/,\s*$/, "") // Remove commas at the end of the text.
+                .replace(/\s*,\s*\n/g, "\n")
+                .replace(/([.!?])\s*,/g, "$1");
 
-          // Remove commas directly after periods, exclamation marks, or question marks.
-          cleanedSection = cleanedSection.replace(/([.!?])\s*,/g, "$1 ");
+              // Ensure every new line starts with a capital letter.
+              cleanedSection = cleanedSection.replace(
+                /(?:^|\n)(\s*)([a-z])/g, // Matches the start of a line or after a newline character.
+                (match, p1, p2) => {
+                  return p1 + p2.toUpperCase(); // Capitalize the first letter after any whitespace.
+                }
+              );
 
-          // Ensure every new line starts with a capital letter.
-          cleanedSection = cleanedSection.replace(
-            /(?:^|\n)(\s*)([a-z])/g, // Matches the start of a line or after a newline character.
-            (match, p1, p2) => {
-              return p1 + p2.toUpperCase(); // Capitalize the first letter after any whitespace.
-            }
-          );
+              // // Capitalize the first letter of any sentence after punctuation.
+              // cleanedSection = cleanedSection.replace(
+              //   /([.!?])\s*(['"]?)([a-z])/g,
+              //   (match, p1, p2, p3) => {
+              //     return p1 + " " + p2 + p3.toUpperCase();
+              //   }
+              // );
 
-          // Capitalize the first letter of any sentence after punctuation.
-          cleanedSection = cleanedSection.replace(
-            /([.!?])\s*(['"]?)([a-z])/g,
-            (match, p1, p2, p3) => {
-              return p1 + " " + p2 + p3.toUpperCase();
-            }
-          );
+              // Ensure there is a space after punctuation before a new word.
+              cleanedSection = cleanedSection.replace(
+                /([.!?])\s*([a-zA-Z])/g,
+                "$1 $2"
+              );
 
-          // Ensure there is a space after punctuation before a new word.
-          cleanedSection = cleanedSection.replace(
-            /([.!?])\s*([a-zA-Z])/g,
-            "$1 $2"
-          );
+              // Capitalize the first letter of sentences after punctuation.
+              cleanedSection = cleanedSection.replace(
+                /(?:^|[.!?]\s+)([a-z])/g,
+                (match, p1) => {
+                  return match.replace(p1, p1.toUpperCase());
+                }
+              );
+              return cleanedSection; // Return the cleaned section.
+            });
 
-          // Capitalize the first letter of sentences after punctuation.
-          cleanedSection = cleanedSection.replace(
-            /(?:^|[.!?]\s+)([a-z])/g,
-            (match, p1) => {
-              return match.replace(p1, p1.toUpperCase());
-            }
-          );
+            // Join the cleaned sections back into a single text block with double line breaks.
+            let finalText = cleanedSections.join("\n\n");
 
-          return cleanedSection; // Return the cleaned section.
+            // Set the cleaned text back into the textarea.
+            document.getElementById("textArea").value = finalText;
+            resolve();
+          }, 3000); // Simulate a 2-second cleaning time
         });
-
-        // Join the cleaned sections back into a single text block with double line breaks.
-        let finalText = cleanedSections.join("\n\n");
-
-        // Set the cleaned text back into the textarea.
-        document.getElementById("textArea").value = finalText.trim();
       }
 
-      // Function to copy the text from the textarea to the clipboard.
       function copyText() {
         const textArea = document.getElementById("textArea");
-        textArea.select(); // Select the text.
-        document.execCommand("copy"); // Copy the selected text to the clipboard.
+        textArea.select();
+        document.execCommand("copy");
       }
+      
+      async function handleAction() {
+      const button = document.getElementById("actionButton");
+      const loader = document.getElementById("loader");
+      const isCleaning = button.innerText === "Clean Text";
 
-      // Function to handle the action button click.
-      function handleAction() {
-        const button = document.getElementById("actionButton");
-        const isCleaning = button.innerText === "Clean Text"; // Check if the button is for cleaning.
-
-        if (isCleaning) {
-          cleanText(); // Clean the text if the button says "Clean Text".
-          button.innerText = "Copy to Clipboard"; // Change the button text to "Copy to Clipboard".
-          button.onclick = copyText; // Set the button's onclick event to copyText function.
-        } else {
-          copyText(); // If the button is not for cleaning, just copy the text.
-        }
-      }
-
-      // Function to clear the textarea after a set time interval (5 minutes).
-      function emptyTextArea() {
-        document
-          .getElementById("textArea")
-          .addEventListener("paste", function () {
-            const timeInterval = 300000; // Set the time interval to 5 minutes (300,000 ms).
-            setTimeout(() => {
-              document.getElementById("textArea").value = ""; // Clear the textarea.
-              document.getElementById("actionButton").innerText = "Clean Text"; // Reset the button text.
-              document.getElementById("actionButton").onclick = handleAction; // Reset the button action to handleAction.
-            }, timeInterval);
-          });
-      }
-
-      emptyTextArea();
+    if (isCleaning) {
+        button.innerText = ""; // Remove the button text
+        loader.classList.remove("hidden"); // Show the loader
+        button.appendChild(loader); // Append the loader to the button
+        button.disabled = true; // Disable the button
+        await cleanText(); 
+        loader.classList.add("hidden"); // Hide the loader
+        button.innerText = "Copy to Clipboard"; // Change button text to "Copy to Clipboard"
+        button.disabled = false; // Re-enable the button
+        button.onclick = copyText; // Change onclick event to copyText
+        setTimeout(function() {
+                location.reload();
+            }, 300000); 
+    } 
+}
+  
     </script>
   </body>
 </html>
